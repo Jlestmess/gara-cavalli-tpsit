@@ -1,46 +1,42 @@
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
-    /**punto di inizio dell'applicazione
-     *thread padre
-     * */
+    static String primo="";
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+        Scanner input = new Scanner(System.in);
 
-        Cavallo fulmine = new Cavallo("Fulmine");
-        Cavallo lampo = new Cavallo("Lampo");
-        Cavallo bucigno = new Cavallo("Bucigno");
-        Cavallo casereccio = new Cavallo("Casereccio");
-        Cavallo marcello = new Cavallo("Marcello");
+        String tmpS;
+        int tmp;
 
-//        casereccio.setPriority(Thread.MAX_PRIORITY);
-//        marcello.setPriority(Thread.MIN_PRIORITY);
+        ArrayList<Cavallo> listaCavallo = new ArrayList<Cavallo>();
 
-        int input;
-        System.out.printf("Inserisci la lentezza per fulmine: ");
-        input = scanner.nextInt();
-        fulmine.setLentezza(input);
+        for (int i = 1; i <= 4; i++) {
+            System.out.println("Inserisci il nome del cavallo " + i);
+            tmpS =  input.nextLine();
+            System.out.println("Inserisci la lentezza del cavallo " + i);
+            tmp = input.nextInt();
+            String v = input.nextLine(); //prende il \n
+            Cavallo c=new Cavallo(tmpS, tmp);
+            listaCavallo.add(c);
+        }
+        for(Cavallo c: listaCavallo){
+            c.start();
+        }
+        for(Cavallo c: listaCavallo){
+            try {
+                c.join();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        System.out.println("Il primo cavallo: " + primo);    }
 
-        System.out.printf("Inserisci la lentezza per lampo: ");
-        input = scanner.nextInt();
-        lampo.setLentezza(input);
-
-        System.out.printf("Inserisci la lentezza per bucigno: ");
-        input = scanner.nextInt();
-        bucigno.setLentezza(input);
-
-        System.out.printf("Inserisci la lentezza per casereccio: ");
-        input = scanner.nextInt();
-        casereccio.setLentezza(input);
-
-        System.out.printf("Inserisci la lentezza per marcello: ");
-        input = scanner.nextInt();
-        marcello.setLentezza(input);
-
-        fulmine.start();
-        lampo.start();
-        bucigno.start();
-        casereccio.start();
-        marcello.start();
+    public static String getPrimo() {
+        return primo;
+    }
+    public static void setPrimo(String primo) {
+        Main.primo = primo;
     }
 }
