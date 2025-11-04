@@ -1,42 +1,140 @@
+import java.io.*;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
+import javax.swing.*; // <-- per JFileChooser
 
 public class Main {
-    static String primo="";
+    static String first;
+
     public static void main(String[] args) {
-        Scanner input = new Scanner(System.in);
+        Scanner scanner = new Scanner(System.in);
+        boolean x = true;
+        ArrayList<Cavallo> horses = new ArrayList<>();
+        int condition;
 
-        String tmpS;
-        int tmp;
+        while (x) {
+            System.out.println("__________________________________________________________________________");
+            System.out.println("1.Insert horse \n2.Insert sleepTime \n3.Start the race\n4.Azzoppa un cavallo\n5.Exit");
+            System.out.println("Enter the option:");
+            condition = scanner.nextInt();
+            scanner.nextLine();
 
-        ArrayList<Cavallo> listaCavallo = new ArrayList<Cavallo>();
+            switch (condition) {
+                case 1:
+                    System.out.println("Enter the horse name:");
+                    String horseName = scanner.nextLine();
+                    horses.add(new Cavallo(horseName));
+                    break;
 
-        for (int i = 1; i <= 4; i++) {
-            System.out.println("Inserisci il nome del cavallo " + i);
-            tmpS =  input.nextLine();
-            System.out.println("Inserisci la lentezza del cavallo " + i);
-            tmp = input.nextInt();
-            String v = input.nextLine(); //prende il \n
-            Cavallo c=new Cavallo(tmpS, tmp);
-            listaCavallo.add(c);
-        }
-        for(Cavallo c: listaCavallo){
-            c.start();
-        }
-        for(Cavallo c: listaCavallo){
-            try {
-                c.join();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                case 2:
+                    int i = 1;
+                    System.out.println("Horse List:");
+                    for (Cavallo c : horses) {
+                        System.out.println(i++ + " " + c.getHorseName());
+                    }
+                    System.out.println("Insert name of horse:");
+                    String name = scanner.nextLine();
+                    System.out.println("Insert the sleep time:");
+                    int sleepTime = scanner.nextInt();
+                    scanner.nextLine();
+
+                    boolean found = false;
+                    for (Cavallo c : horses) {
+                        if (c.getHorseName().equals(name)) {
+                            c.setSleepTime(sleepTime);
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        System.out.println("Horse not found.");
+                    }
+                    break;
+
+                case 3:
+                    if (horses.isEmpty()) {
+                        System.out.println("No horses in the race!");
+                        break;
+                    }
+
+                    Main.first = null;
+
+                    ArrayList<Cavallo> race = new ArrayList<>();
+                    for (Cavallo c : horses) {
+                        race.add(new Cavallo(c.getHorseName()));  // fresh instance
+                        race.get(race.size() - 1).setSleepTime(c.getSleepTime());
+                    }
+
+                    for (Cavallo c : race) {
+                        c.start();
+                    }
+                    for (Cavallo c : race) {
+                        try {
+                            c.join();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    System.out.println("The winner is: " + first);
+
+                    //dopo la corsa, chiedi dove salvare il risultato
+                    salvaRisultatoSuFile("The winner is: " + first);
+                    break;
+
+                case 4:
+                    if (!horses.isEmpty()) {
+                        int rand = (int) (Math.random() * horses.size());
+                        horses.get(rand).setInterrupt();
+                        System.out.println(horses.get(rand).getHorseName() + " è stato azzoppato!");
+                    }
+                    break;
+
+                case 5:
+                    x = false;
+                    break;
+
+                default:
+                    System.out.println("Invalid option!");
+                    break;
             }
         }
-        System.out.println("Il primo cavallo: " + primo);    }
 
-    public static String getPrimo() {
-        return primo;
+        scanner.close();
     }
-    public static void setPrimo(String primo) {
-        Main.primo = primo;
+
+    public static synchronized void setFirst(String t) {
+        first = t;
     }
+
+    public static synchronized String getFirst() {
+        return first;
+    }
+
+
+    // Metodo per scegliere un file e salvare il risultato
+
+    public static void salvaRisultatoSuFile(String testo) {
+        try {
+
+            JFileChooser fc = new JFileChooser();
+            fc.setDialogTitle("Scegli dove salvare il risultato");
+
+            int returnVal = fc.showSaveDialog(null);
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                File file = fc.getSelectedFile();
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+                    writer.write(testo);
+                    System.out.println("Risultato salvato in: " + file.getAbsolutePath());
+                } catch (IOException e) {
+                    System.out.println("Errore nel salvataggio: " + e.getMessage());
+                }
+            } else {
+                System.out.println("Salvataggio annullato.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }
